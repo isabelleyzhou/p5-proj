@@ -1,7 +1,10 @@
+var input, button;
 var canvas;
 var numbers;
 var instr="Please click on the first item of the list";
-rightBoxNum=1;
+var wrong="Nope that's not correct. Try again!"
+var first= true;
+var yorno=2;
 
 class Grid{
   constructor (){
@@ -57,6 +60,16 @@ class Box{
 function setup() {
   canvas = createCanvas(window.innerWidth, window.innerHeight);
   numbers=createNums();
+
+  yes_button = createButton('YES');
+  yes_button.position(window.innerWidth *.5,135);
+  yes_button.mousePressed(()=>{yorno=1});
+
+  no_button= createButton('NO');
+  no_button.position(window.innerWidth *.6, 135);
+  no_button.mousePressed(()=>{yorno=0});
+
+
 }
 
 function draw() {
@@ -83,7 +96,25 @@ function draw() {
     text(numbers[i], 77.5+ 75*i , 255);
   }
 
+  for (var i =1; i< numbers.length; i++){
+    var temp= numbers[i];
+    var j;
+    var condition= temp < numbers[j];
+    for (j=i-1; j>=0; j--){
+      if (yorno==1 && condition){
+        instr= "That's correct! This means we should swap the two values."
+        numbers[j+1]= numbers[j];
+      }
+      else if(yorno==0 && !condition || yorno==1 && condition){
+        instr= "That's correct! This means the values stay the same."
+      }
+      else if(yorno==1 && !condition){
+        instr=wrong;
+      }
 
+    }
+    numbers[j+1]=temp;
+  }
 
 }
 
@@ -105,13 +136,15 @@ function createNums(){
 
 function mouseClicked(){
   //for (let i = 1; i < numbers.length; i++) {
-    var i=0;
-    if (grid.rightBox(i)){
-      instr="Good. Now we look at the next element"
+  if (first){
+    if (grid.rightBox(0)){
+      instr="Good. Now we look at the next number. Is "+numbers[0]+" > "+numbers[1];
     }
     else{
-      instr="Nope that's not correct. Try again!"
+      instr= wrong;
     }
+    first= false;
+  }
   //}
 
   // else if ()
