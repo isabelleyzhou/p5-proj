@@ -1,20 +1,31 @@
-var input, button;
 var canvas;
 var numbers;
-var instr="Please click on the first item of the list";
-var wrong="Nope that's not correct. Try again!"
-var first= true;
-var yorno=2;
+var color=255;
+var i=0;
+var small;
+var temp;
+var first_done;
 
 class Grid{
-  constructor (){
+  constructor (iandj=[0,1]){
     this.grid=[];
+    this.curBoxIndex= iandj[0];
+    this.smallestIndex= iandj[1];
     for (var i = 0; i < 12; i++){
       fill(255, 255, 255);
       // rectMode(CENTER); center the single digit numbers later!!
-      var gridChecks = new Box(i, 75+i*75, 200, 75, 75);
+      if(i==this.curBoxIndex){
+        var gridChecks = new Box(i, 200, 75+i*75, 200, 75, 75);
+      }
+      else if(i==this.smallestIndex){
+        var gridChecks = new Box(i, 200, 75+i*75, 200, 75, 75);
+      }
+      else{
+        var gridChecks = new Box(i, 0, 75+i*75, 200, 75, 75);
+      }
       this.grid.push(gridChecks);
     }
+
   }
 
   rightBox(boxIndex){
@@ -27,21 +38,32 @@ class Grid{
     if (mouseX >= left && mouseX <= right && mouseY>= up && mouseY <= down){
       return true;
     }
-
     return false;
+  }
 
+  change_curBox(curBox_index){
+    this.curBox= this.grid[curBox_index];
+  }
+
+  change_checkBox(checkBox_index){
+    this.checkBox= this.grid[checkBox_index];
   }
 }
 
 class Box{
-  constructor(index, x, y, width, height){
+  constructor(index, color, x, y, width, height){
     this.index=index;
     this.x= x;
     this.y=y;
     this.width= width;
     this.height=height;
-    fill(255, 255, 255);
+    this.color=color;
+
+    fill(255);
+    stroke(color);
+    strokeWeight(4);
     rect(x,y,width, height);
+    stroke(255);
   }
 
   get_boxNum(){
@@ -61,59 +83,45 @@ function setup() {
   canvas = createCanvas(window.innerWidth, window.innerHeight);
   numbers=createNums();
 
-  yes_button = createButton('YES');
-  yes_button.position(window.innerWidth *.5,135);
-  yes_button.mousePressed(()=>{yorno=1});
-
-  no_button= createButton('NO');
-  no_button.position(window.innerWidth *.6, 135);
-  no_button.mousePressed(()=>{yorno=0});
+  //yes_button = createButton('Next');
+  //yes_button.position(window.innerWidth *.5,135);
+  //yes_button.mousePressed(()=>{stop=false});
 
 
 }
 
 function draw() {
-  background(50);
+  background(255);
   fill(255);
 
-  fill(255, 255, 255);
-  textSize(60);
-  text('Insertion Sort', window.innerWidth *.3 , 80);
+  fill(0);
 
-  fill(255, 255, 255);
+  textSize(60);
+  text('Selection Sort', window.innerWidth *.3 , 80);
+
+  fill(0);
   textSize(15);
-  text(instr, window.innerWidth *.01 , 150);
+  text("Click to see the next step in the selection sort", window.innerWidth *.01 , 150);
+
+  fill(0);
+  textSize(15);
+  text("The gray boxes highlight the current index and the smallest value which are switched at each step of selection sort. ", window.innerWidth *.01 , 350);
 
   grid= new Grid();
 
-
-  for (var i = 0; i < 12; i=i+1){
-    //fill(255, 255, 255);
-    // rectMode(CENTER); center the single digit numbers later!!
-    //rect(75+i*75, 200, 75, 75);
+  for (var n = 0; n < 12; n=n+1){
     fill(0, 0, 0);
     textSize(60);
-    text(numbers[i], 77.5+ 75*i , 255);
+    text(numbers[n], 77.5+ 75*n , 255);
   }
 
-  for (var i =1; i< numbers.length; i++){
-    var temp= numbers[i];
-    var j;
-    var condition= temp < numbers[j];
-    for (j=i-1; j>=0; j--){
-      if (yorno==1 && condition){
-        instr= "That's correct! This means we should swap the two values."
-        numbers[j+1]= numbers[j];
-      }
-      else if(yorno==0 && !condition || yorno==1 && condition){
-        instr= "That's correct! This means the values stay the same."
-      }
-      else if(yorno==1 && !condition){
-        instr=wrong;
-      }
+  steps= firststep();
+  grid= new Grid(steps);
 
-    }
-    numbers[j+1]=temp;
+  for (var n = 0; n < 12; n=n+1){
+    fill(0, 0, 0);
+    textSize(60);
+    text(numbers[n], 77.5+ 75*n , 255);
   }
 
 }
@@ -126,6 +134,28 @@ window.onresize = function() {
   height = h;
 }
 
+function firststep(){
+  if (i<numbers.length-1){
+    small=i;
+    //display the current box on i
+    for(j=i+1; j<numbers.length; j++){
+      if(numbers[j]< numbers[small]){
+        small=j;
+        //display the smallest box on small
+      }
+    }
+    }
+  first_done=true;
+  return [i,small]
+}
+
+function swap_values(){
+    temp=numbers[small];
+    numbers[small]=numbers[i];
+    numbers[i]= temp;
+    first_done=false;
+}
+
 function createNums(){
   var nums= [];
   for (var i=0; i<12; i=i+1){
@@ -134,18 +164,48 @@ function createNums(){
   return nums;
 }
 
-function mouseClicked(){
-  //for (let i = 1; i < numbers.length; i++) {
-  if (first){
-    if (grid.rightBox(0)){
-      instr="Good. Now we look at the next number. Is "+numbers[0]+" > "+numbers[1];
-    }
-    else{
-      instr= wrong;
-    }
-    first= false;
-  }
-  //}
+// function actualSelectionSort(actualList){
+//   var index;
+//   var smallestIndex;
+//   var minIndex;
+//   var temp;
+//
+//   for(index=0; index< actualList.length; index++){
+//     smallestIndex=index;
+//     for(minIndex= index+1; minIndex< actualList.length; minIndex++){
+//       if (actualList[minIndex] < actualList[smallestIndex]){
+//         smallestIndex= minIndex;
+//       }
+//     }
+//     temp=actualList[smallestIndex];
+//     actualList[smallestIndex]=actualList[index];
+//     actualList[index]= temp;
+//   }
+// }
 
-  // else if ()
+// function ifSameList(l1,l2){
+//   for(var i=0; i< l1.length; i++){
+//     if (l1[i]!=l2[i]){
+//       return false;
+//     }
+//   }
+//   return true;
+// }
+
+
+function mouseClicked(){
+
+  // numbers=createNums();
+  // correct= actualSelectionSort(numbers);
+  // if(ifSameList(numbers,correct)==true){
+  //   fill(255, 0, 0);
+  //   textSize(30);
+  //   text("The sort is done!", window.innerWidth *.01 , 450);
+  // }
+  if (first_done==true){
+    swap_values();
+    i++;
+  }
+
+
 }
